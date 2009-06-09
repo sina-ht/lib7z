@@ -60,6 +60,7 @@ typedef struct _i7z_folder {
   UINT64 stream_base;
   UINT64 *inindexes;
   UINT64 *outindexes;
+  UINT64 *indexes;
 } I7z_folder;
 
 typedef struct _i7z_pack {

@@ -5,7 +5,9 @@
 
 #include "MyWindows.h"
 
+#ifndef RINOK
 #define RINOK(x) { HRESULT __result_ = (x); if(__result_ != S_OK) return __result_; }
+#endif
 
 template <class T>
 class CMyComPtr
@@ -152,6 +154,13 @@ public:
 #define MY_QUERYINTERFACE_ENTRY(i) if (iid == IID_ ## i) \
     { *outObject = (void *)(i *)this; AddRef(); return S_OK; }
 
+#define MY_QUERYINTERFACE_ENTRY_UNKNOWN(i) if (iid == IID_IUnknown) \
+    { *outObject = (void *)(IUnknown *)(i *)this; AddRef(); return S_OK; }
+
+#define MY_QUERYINTERFACE_BEGIN2(i) MY_QUERYINTERFACE_BEGIN \
+    MY_QUERYINTERFACE_ENTRY_UNKNOWN(i) \
+    MY_QUERYINTERFACE_ENTRY(i)
+
 #define MY_QUERYINTERFACE_END return E_NOINTERFACE; }
 
 #define MY_ADDREF_RELEASE \
@@ -166,24 +175,31 @@ STDMETHOD_(ULONG, Release)() { if (--__m_RefCount != 0)  \
   MY_ADDREF_RELEASE
 
 
-#define MY_UNKNOWN_IMP MY_UNKNOWN_IMP_SPEC(;)
+#define MY_UNKNOWN_IMP MY_QUERYINTERFACE_BEGIN \
+  MY_QUERYINTERFACE_ENTRY_UNKNOWN(IUnknown) \
+  MY_QUERYINTERFACE_END \
+  MY_ADDREF_RELEASE
 
 #define MY_UNKNOWN_IMP1(i) MY_UNKNOWN_IMP_SPEC( \
+  MY_QUERYINTERFACE_ENTRY_UNKNOWN(i) \
   MY_QUERYINTERFACE_ENTRY(i) \
   )
 
 #define MY_UNKNOWN_IMP2(i1, i2) MY_UNKNOWN_IMP_SPEC( \
+  MY_QUERYINTERFACE_ENTRY_UNKNOWN(i1) \
   MY_QUERYINTERFACE_ENTRY(i1) \
   MY_QUERYINTERFACE_ENTRY(i2) \
   )
 
 #define MY_UNKNOWN_IMP3(i1, i2, i3) MY_UNKNOWN_IMP_SPEC( \
+  MY_QUERYINTERFACE_ENTRY_UNKNOWN(i1) \
   MY_QUERYINTERFACE_ENTRY(i1) \
   MY_QUERYINTERFACE_ENTRY(i2) \
   MY_QUERYINTERFACE_ENTRY(i3) \
   )
 
 #define MY_UNKNOWN_IMP4(i1, i2, i3, i4) MY_UNKNOWN_IMP_SPEC( \
+  MY_QUERYINTERFACE_ENTRY_UNKNOWN(i1) \
   MY_QUERYINTERFACE_ENTRY(i1) \
   MY_QUERYINTERFACE_ENTRY(i2) \
   MY_QUERYINTERFACE_ENTRY(i3) \
@@ -191,6 +207,7 @@ STDMETHOD_(ULONG, Release)() { if (--__m_RefCount != 0)  \
   )
 
 #define MY_UNKNOWN_IMP5(i1, i2, i3, i4, i5) MY_UNKNOWN_IMP_SPEC( \
+  MY_QUERYINTERFACE_ENTRY_UNKNOWN(i1) \
   MY_QUERYINTERFACE_ENTRY(i1) \
   MY_QUERYINTERFACE_ENTRY(i2) \
   MY_QUERYINTERFACE_ENTRY(i3) \

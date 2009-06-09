@@ -9,7 +9,6 @@ noinst_HEADERS = \
 	lzma_decode.h \
 	ppmd_decode.h \
 	LZMA_SDK/Common/Alloc.h \
-	LZMA_SDK/Common/CRC.h \
 	LZMA_SDK/Common/Defs.h \
 	LZMA_SDK/Common/MyCom.h \
 	LZMA_SDK/Common/MyGuidDef.h \
@@ -49,7 +48,8 @@ lib7z_la_SOURCES = \
 	wrapper/7zip/Compress/LZMA_C/LzmaDecode.c \
 	wrapper/7zip/Compress/PPMD/StdAfx.cpp \
 	wrapper/7zip/Compress/PPMD/PPMDDecoder.cpp \
-	LZMA_SDK/Common/Alloc.cpp \
+	LZMA_SDK/Common/Alloc.c \
+	LZMA_SDK/Common/7zCrc.c \
 	LZMA_SDK/Common/CRC.cpp \
 	LZMA_SDK/7zip/Common/InBuffer.cpp \
 	LZMA_SDK/7zip/Common/OutBuffer.cpp \

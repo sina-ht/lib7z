@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Thu Apr 13 23:58:11 2006.
+ * Last Modified: Sat Mar 14 01:21:01 2009.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -120,14 +120,14 @@ int
 lzma_decode(void *_dec, unsigned char *output, UINT64 *outsize)
 {
   LZMA_Decoder *dec = _dec;
-  unsigned int processed;
   UINT64 decoded;
-  UINT32 kBlockSize = 0x10000;
+  UINT32 kBlockSize = 0x100000;
   int result;
 
   decoded = 0;
   while (decoded < *outsize) {
-    UINT32 blocksize = *outsize - decoded;
+    SizeT blocksize = *outsize - decoded;
+    SizeT processed;
 
     if (blocksize > kBlockSize)
       blocksize = kBlockSize;

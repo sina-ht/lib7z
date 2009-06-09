@@ -3,7 +3,7 @@
  * (C)Copyright 2000-2004 by Hiroshi Takekawa
  * This file is part of Enfle.
  *
- * Last Modified: Sat Feb 25 01:09:03 2006.
+ * Last Modified: Sat Mar 14 01:35:00 2009.
  * $Id$
  *
  * Enfle is free software; you can redistribute it and/or modify it
@@ -130,6 +130,9 @@ I7z_open(Archive *arc, Stream *st, char *path)
     outsize = folder->unsubstreamsizes[i7z_d->current_index - folder->idx_base];
     i7z_d->current_index++;
     outbuf = malloc(outsize);
+    debug_message_fnc("outsize = %lld, outbuf = %p\n", outsize, outbuf);
+    if (outbuf == NULL)
+      return NO_ENOUGH_MEMORY;
     if ((res = i7z_d->coder->decode(i7z_d->dec, outbuf, &outsize)) != 0) {
       debug_message_fnc("decode() failed: error code = %d.\n", res);
       free(outbuf);
@@ -200,11 +203,11 @@ DEFINE_ARCHIVER_PLUGIN_OPEN(a, st, priv)
 {
   I7z *i7z = NULL;
   I7z_stream *i7z_st = NULL;
-  Dlist *dl;
+  Dlist *dl = NULL;
   Dlist_data *dd;
   I7z_data *i7z_d;
   I7z_info *i7z_i;
-  Hash *hash;
+  Hash *hash = NULL;
   unsigned int i;
   int r;
   ArchiverStatus res;
@@ -257,7 +260,14 @@ DEFINE_ARCHIVER_PLUGIN_OPEN(a, st, priv)
     char *path;
     if (i7z->file_to_substream[i] == (UINT64)-1)
       continue;
-    path = calloc(1, strlen(i7z->filenames[i]) + 2);
+    if (i7z->filenames[i] == NULL) {
+      warning_fnc("filenames[%d] is NULL.\n", i);
+      continue;
+    }
+    if ((path = calloc(1, strlen(i7z->filenames[i]) + 2)) == NULL) {
+      res = OPEN_ERROR;
+      goto out_free_i7z;
+    }
     path[0] = '#';
     strcat(path, i7z->filenames[i]);
     dlist_add(dl, path);
@@ -277,12 +287,12 @@ DEFINE_ARCHIVER_PLUGIN_OPEN(a, st, priv)
   //dlist_sort(dl);
 
   dlist_iter (dl, dd) {
-    void *remainder = hash_lookup_str(hash, dlist_data(dd));
+    void *reminder = hash_lookup_str(hash, dlist_data(dd));
 
-    if (!remainder) {
+    if (!reminder) {
       warning("%s: %s: %s not in hash.\n", __FILE__, __FUNCTION__, (char *)dlist_data(dd));
     } else {
-      I7z_info *i7z_i = remainder;
+      I7z_info *i7z_i = reminder;
       debug_message("7z: %s: add %s as index %d\n", __FUNCTION__, (char *)dlist_data(dd), i7z_i->idx);
       archive_add(a, dlist_data(dd), (void *)i7z_i);
     }
@@ -299,6 +309,10 @@ DEFINE_ARCHIVER_PLUGIN_OPEN(a, st, priv)
   return OPEN_OK;
 
  out_free_i7z:
+  if (hash)
+    hash_destroy(hash);
+  if (dl)
+    dlist_destroy(dl);
   if (i7z_st)
     i7z_stream_destroy(i7z_st);
   if (i7z)

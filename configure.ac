@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.60)
-AC_INIT([7z],[20060909],[sian@big.or.jp])
+AC_INIT([7z],[20080202],[sian@big.or.jp])
 AC_CONFIG_SRCDIR([src/7z.c])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -10,6 +10,10 @@ AM_INIT_AUTOMAKE
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
@@ -17,6 +21,7 @@ AC_PROG_LIBTOOL
 AC_CHECK_LIB([m], [main])
 
 # Checks for header files.
+AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h stddef.h stdlib.h string.h unistd.h])
 

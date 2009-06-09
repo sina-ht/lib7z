@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Wed Jan 10 02:00:09 2007.
+ * Last Modified: Sat May  9 00:18:19 2009.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -23,6 +23,7 @@
 #define PACKAGE "7z"
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define REQUIRE_STRING_H
 #include "compat.h"
@@ -576,7 +577,14 @@ parse_folder(I7z_pack *pack, I7z_stream *st, I7z_folder *f)
     
   if (npackedstreams > 1) {
     warning_fnc("nout %d, nin %d, nbindpairs %d, npackedstreams %d\n", nout, nin, nbindpairs, npackedstreams);
-    fatal("Unimplemented (folder).\n");
+    if ((f->indexes = calloc(npackedstreams, sizeof(*f->indexes))) == NULL) {
+      err_message_fnc("No enough memory.\n");
+      return NO_ENOUGH_MEMORY;
+    }
+    for (i = 0; i < npackedstreams; i++) {
+      f->indexes[i] = get_uint64(st);
+      debug_message_fnc("index#%d: %d\n", i, f->indexes[i]);
+    }
   }
 
   debug_message_fn("() end\n");
@@ -978,8 +986,9 @@ parse_files_info_name(I7z *i7z, I7z_stream *st)
       wcs[j] = wc;
       if (wc == 0) {
 	i7z->wc_filenames[i] = wcs;
-	if ((res = converter_convert((char *)wcs, &i7z->filenames[i], j * sizeof(*wcs), "UNICODELITTLE", "EUC-JISX0213")) == 0) {
-	  err_message_fnc(" converter_convert returned %d\n", res);
+	if ((res = converter_convert((char *)wcs, &i7z->filenames[i], j * sizeof(*wcs), "UNICODELITTLE", "UTF-8"/*"EUC-JISX0213"*/)) < 0) {
+	  if (res == -EILSEQ)
+	    err_message_fnc(" Illegal sequence: %s\n", i7z->wc_filenames[i]);
 	}
 	debug_message(" File #%d: %s\n", i, i7z->filenames[i]);
 	break;
@@ -992,7 +1001,7 @@ parse_files_info_name(I7z *i7z, I7z_stream *st)
 	if ((tmp = realloc(wcs, size * sizeof(*wcs))) == NULL) {
 	  free(wcs);
 	  err_message_fnc("No enough memory.\n");
-	  res = UNEXPECTED_EOF;
+	  res = NO_ENOUGH_MEMORY;
 	  goto out;
 	}
 	wcs = tmp;
@@ -1316,6 +1325,8 @@ decode_streams(I7z_pack *pack, I7z_stream *st, unsigned int *n_r, unsigned char 
     insize = pack->packsizes[i];
     outsize = pack->folders[i].unpacksizes[0];
     outbuf = outbufs[i] = malloc(outsize);
+    if (outbuf == NULL)
+      return NO_ENOUGH_MEMORY;
     debug_message_fnc("outsize = %lld\n", outsize);
     if ((res = coder->decode(dec, outbuf, &outsize)) < 0)
       return res;
@@ -1454,6 +1465,8 @@ i7z_parse_header(I7z **i7z_p, I7z_stream *st)
       i7z_stream_close(decoded_st);
       i7z_stream_destroy(decoded_st);
     }
+    break;
+  case UNEXPECTED_EOF:
     break;
   default:
     err_message_fnc("Unexpected property id %02X\n", c);
