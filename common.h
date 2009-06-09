@@ -3,7 +3,7 @@
  * (C)Copyright 2000-2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Sep  5 14:46:09 2004.
+ * Last Modified: Sat Mar  5 20:31:27 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -23,6 +23,14 @@
 #include <signal.h>
 #if defined(inline)
 #undef inline
+#endif
+
+/* If compat.h didn't include, include config.h here. */
+#ifdef HAVE_CONFIG_H
+# ifndef CONFIG_H_INCLUDED
+#  include "config.h"
+#  define CONFIG_H_INCLUDED
+# endif
 #endif
 
 #include <stdio.h>

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([7z],[20041122],[sian@big.or.jp])
+AC_INIT([7z],[20050725],[sian@big.or.jp])
 AC_CONFIG_SRCDIR([src/7z.c])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -32,6 +32,14 @@ AC_FUNC_MALLOC
 AC_FUNC_MEMCMP
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memmove memset strcasecmp strdup])
+
+AC_ARG_ENABLE(debug,
+	[  --enable-debug          enable debugging code ])
+if test "${enable_debug-set}" = "set"; then
+  enable_debug=no
+elif test "$enable_debug" = "yes"; then
+  AC_DEFINE(DEBUG,, [Define if you want to debug.])
+fi
 
 AC_ARG_WITH(enfle,
         [  --with-enfle=prefix     specify enfle installed prefix (e.g. /usr) ])

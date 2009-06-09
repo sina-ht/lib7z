@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Sep  5 14:42:12 2004.
+ * Last Modified: Sun Jul 24 01:27:35 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -20,6 +20,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <stdio.h>
+
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,7 +37,9 @@
 #include "ppmd_decode.h"
 
 struct PPMD_Decoder {
-  ISequentialInStream *ifs;
+  I7z_stream *st;
+  unsigned char *prop;
+  unsigned int propsize;
   NCompress::NPPMD::CDecoder *decoder;
   UInt64 offset;
 };
@@ -54,13 +59,6 @@ public:
   virtual ~CStreamInStream() {}
   HRESULT Read(void *_data, UINT32 _size, UINT32 *processedSize) {
     int read_size = 0;
-
-    if (prop_ptr < propsize) {
-      read_size = prop_ptr + _size <= propsize ? _size : propsize - prop_ptr;
-      memcpy(_data, prop + prop_ptr, read_size);
-      prop_ptr += read_size;
-      _size -= read_size;
-    }
 
     if (_size > 0)
       read_size += i7z_stream_read(st, ((unsigned char *)_data) + read_size, _size);
@@ -117,11 +115,19 @@ ppmd_decoder_create(I7z_stream *st, unsigned char *prop, unsigned int propsize)
   if (!dec)
     return NULL;
 
-  dec->ifs = new CStreamInStream(st, prop, propsize);
+  dec->st = st;
+  dec->prop = prop;
+  dec->propsize = propsize;
   dec->decoder = new NCompress::NPPMD::CDecoder;
   dec->offset = 0;
-  res = dec->decoder->Create(1 << 20);
-  res = dec->decoder->SetDecoderProperties(dec->ifs);
+  printf("prop(size %d): %02X%02X%02X%02X%02X\n", propsize,
+	 prop[0],
+	 prop[1],
+	 prop[2],
+	 prop[3],
+	 prop[4]
+	 );
+  res = dec->decoder->SetDecoderProperties2((const Byte *)prop, propsize);
 
   return dec;
 }
@@ -132,8 +138,6 @@ ppmd_decoder_destroy(void *_dec)
   PPMD_Decoder *dec = (PPMD_Decoder *)_dec;
 
   if (dec) {
-    if (dec->ifs)
-      delete dec->ifs;
     if (dec->decoder)
       delete dec->decoder;
     delete dec;
@@ -144,18 +148,18 @@ int
 ppmd_decode(void *_dec, unsigned char *output, UInt64 *outsize)
 {
   PPMD_Decoder *dec = (PPMD_Decoder *)_dec;
+  ISequentialInStream *ifs;
   ISequentialOutStream *ofs;
   ICompressProgressInfo *pi;
   UInt64 insize;
   HRESULT res;
 
+  ifs = new CStreamInStream(dec->st, dec->prop, dec->propsize);
   ofs = new CMemoryOutStream(output, *outsize);
   pi = new ProgressInfo;
-  res = dec->decoder->Code(dec->ifs, ofs, &insize, outsize, pi);
+  res = dec->decoder->Code(ifs, ofs, &insize, outsize, pi);
   dec->offset += *outsize;
-  dec->decoder->Flush();
   delete pi;
-  delete ofs;
 
   return res;
 }

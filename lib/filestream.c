@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Sep  5 14:44:40 2004.
+ * Last Modified: Sun Jul 24 00:20:13 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -49,7 +49,18 @@ static void
 filestream_close(void *obj)
 {
   I7z_filestream *mst = obj;
-  fclose(mst->fp);
+
+  if (mst->fp) {
+    fclose(mst->fp);
+    mst->fp = NULL;
+  }
+}
+
+static void
+filestream_destroy(void *obj)
+{
+  filestream_close(obj);
+  free(obj);
 }
 
 int
@@ -65,6 +76,7 @@ i7z_stream_make_filestream(I7z_stream *st, char *path)
   st->seek_func = filestream_seek;
   st->tell_func = filestream_tell;
   st->close_func = filestream_close;
+  st->destroy_func = filestream_destroy;
 
   return 1;
 }

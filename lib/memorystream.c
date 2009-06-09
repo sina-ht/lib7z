@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Thu Sep 23 03:26:21 2004.
+ * Last Modified: Sun Jul 24 00:20:38 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -19,6 +19,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+
+#include <stdio.h>
 
 #include "7z.h"
 #include "memorystream.h"
@@ -73,13 +75,17 @@ static void
 memorystream_close(void *obj)
 {
   I7z_memorystream *mst = obj;
-  free(mst->buf);
+
+  if (mst->buf) {
+    free(mst->buf);
+    mst->buf = NULL;
+  }
 }
 
-#include <stdio.h>
 static void
 memorystream_destroy(void *obj)
 {
+  memorystream_close(obj);
   free(obj);
 }
 

@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Thu Sep 23 04:33:16 2004.
+ * Last Modified: Sun Jul 24 00:32:58 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -161,20 +161,34 @@ i7z_pack_free(I7z_pack *pack)
 void
 i7z_free(I7z *i7z)
 {
+  int i;
+
   if (!i7z)
     return;
 
   i7z_pack_free(&i7z->additional_pack);
   i7z_pack_free(&i7z->main_pack);
   
-  if (i7z->wc_filenames)
+  if (i7z->file_to_substream)
+    free(i7z->file_to_substream);
+  if (i7z->file_to_folder)
+    free(i7z->file_to_folder);
+  if (i7z->wc_filenames) {
+    for (i = 0; i < i7z->nfiles; i++) {
+      if (i7z->wc_filenames[i])
+	free(i7z->wc_filenames[i]);
+    }
     free(i7z->wc_filenames);
-  if (i7z->filenames)
+  }
+  if (i7z->filenames) {
+    for (i = 0; i < i7z->nfiles; i++) {
+      if (i7z->filenames[i])
+	free(i7z->filenames[i]);
+    }
     free(i7z->filenames);
+  }
   if (i7z->additional_streams) {
-    unsigned int i;
-    for (i = 0; i < i7z->additional_pack.npackstreams; i++)
-      free(i7z->additional_streams[i]);
+    /* additional_stream[i] has already been freed by memorystream_close() */
     free(i7z->additional_streams);
   }
   free(i7z);
@@ -1276,6 +1290,7 @@ decode_streams(I7z_pack *pack, I7z_stream *st, unsigned int *n_r, unsigned char 
   if ((outbufs = calloc(pack->npackstreams, sizeof(*outbufs))) == NULL) 
     return NO_ENOUGH_MEMORY;
 
+  debug_message_fnc("%d packstreams\n", pack->npackstreams);
   /* XXX: Assume stream = folder for Additional Streams */
   for (i = 0; i < pack->npackstreams; i++) {
     I7z_coder *coder = &pack->folders[i].coders[0];

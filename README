@@ -1,5 +1,5 @@
 lib7z -- 7z archive manipulation library
-(C)Copyright 2004 by Hiroshi Takekawa.
+(C)Copyright 2004, 2005 by Hiroshi Takekawa.
 
 Limitation:
 
@@ -40,13 +40,13 @@ Licensing Term:
 
 Integrated codes by other authors:
 
-  lib/LZMA_SDK: LZMA SDK 4.05
+  lib/LZMA_SDK: LZMA SDK 4.23
     LZMA SDK by Igor Pavlov.  LZMA SDK is under lib/LZMA_SDK/.  For
     this part, you can apply LGPL or CPL.  See
     lib/LZMA_SDK/docs/lzma.txt.
 
   lib/wrapper/7zip/Compress/LZMA_C/LzmaDecode.[ch]: LZMA decoder
-    LZMA decoder written in C from LZMA SDK 4.05 with some
+    LZMA decoder written in C from LZMA SDK 4.23 with some
     modification by me.  These files are under LGPL, including my
     modification.
 

@@ -2,8 +2,8 @@
  * 7z.h
  */
 
-#if !defined(_7Z_H_)
-#define _7Z_H_
+#if !defined(__7Z_H__)
+#define __7Z_H__
 
 typedef unsigned long long int UINT64;
 typedef unsigned int UINT32;

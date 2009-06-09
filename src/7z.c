@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Sep  5 14:45:05 2004.
+ * Last Modified: Sun Jul 24 00:25:18 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -58,7 +58,10 @@ extract_files(I7z *i7z, I7z_stream *st)
     }
 
     outsize = folder->unsubstreamsizes[idx_f];
-    outbuf = malloc(outsize);
+    if ((outbuf = malloc(outsize)) == NULL) {
+      err_message_fnc("Cannot allocate %d bytes\n", outsize);
+      return;
+    }
     debug_message_fnc("File #%u: Substream #%d: outsize = %llu (Folder #%u)\n", i, idx, outsize, nfolder);
     if ((res = coder->decode(dec, outbuf, &outsize)) == 0) {
       FILE *fp;
@@ -112,7 +115,7 @@ main(int argc, char **argv)
  out_free_i7z:
   i7z_free(i7z);
  out:
-  i7z_stream_close(st);
+  i7z_stream_destroy(st);
 
   return 0;
 }

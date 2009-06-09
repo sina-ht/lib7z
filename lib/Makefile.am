@@ -7,7 +7,9 @@ noinst_HEADERS = \
 	memorystream.h \
 	LZMA_SDK/Common/Alloc.h \
 	LZMA_SDK/Common/CRC.h \
+	LZMA_SDK/Common/Defs.h \
 	LZMA_SDK/Common/MyCom.h \
+	LZMA_SDK/Common/MyGuidDef.h \
 	LZMA_SDK/Common/MyWindows.h \
 	LZMA_SDK/Common/MyUnknown.h \
 	LZMA_SDK/Common/StdAfx.h \
