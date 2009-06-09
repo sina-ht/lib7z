@@ -1,16 +1,16 @@
 /*
- * enflestream.h
+ * memorystream_private.h
  * (C)Copyright 2004 by Hiroshi Takekawa
- * This file is part of Enfle.
+ * This file is part of lib7z.
  *
- * Last Modified: Fri Oct  7 08:12:25 2005.
+ * Last Modified: Fri Oct  7 08:04:46 2005.
  * $Id$
  *
- * Enfle is free software; you can redistribute it and/or modify it
+ * lib7z is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  *
- * Enfle is distributed in the hope that it will be useful,
+ * lib7z is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,10 +20,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if !defined(__ENFLESTREAM_H__)
-#define __ENFLESTREAM_H__
+#if !defined(__MEMORYSTREAM_PRIVATE_H__)
+#define __MEMORYSTREAM_PRIVATE_H__
 
-void i7z_stream_set_enflestream(I7z_stream *st, Stream *enfle_st);
-int i7z_stream_make_enflestream(I7z_stream *st, Stream *enfle_st);
+typedef struct _i7z_memorystream {
+  unsigned char *buf;
+  unsigned int size;
+  unsigned int offset;
+} I7z_memorystream;
 
 #endif

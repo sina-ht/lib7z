@@ -16,6 +16,7 @@ typedef enum _i7z_err {
   PROPERTY_ERROR = -5,
   LZMA_DATA_ERROR = -6,
   LZMA_NO_ENOUGH_BUFFER = -7,
+  UNKNOWN_CODEC = -8,
   UNKNOWN_ERROR = -255,
 } I7z_err;
 

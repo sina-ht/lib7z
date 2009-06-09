@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Jul 24 02:33:10 2005.
+ * Last Modified: Thu Apr 13 23:58:11 2006.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -24,7 +24,7 @@
 
 #include "7z.h"
 #include "common.h"
-#include "LzmaDecode.h"
+#include "wrapper/7zip/Compress/LZMA_C/LzmaDecode.h"
 #include "lzma_decode.h"
 
 #if !defined(_LZMA_IN_CB)
@@ -60,11 +60,6 @@ read_stream(void *obj, const unsigned char **buf, SizeT *size)
 void *
 lzma_decoder_create(I7z_stream *st, unsigned char *prop, unsigned int propsize)
 {
-  int i, lc, lp, pb;
-  unsigned int lzmaInternalSize;
-  unsigned char *lzmaInternalData;
-  unsigned int dictionarySize;
-  unsigned char *dictionary;
   ReadStream *rs;
   LZMA_Decoder *dec;
 

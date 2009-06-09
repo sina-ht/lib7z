@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of Enfle.
  *
- * Last Modified: Thu Sep 23 03:19:11 2004.
+ * Last Modified: Fri Oct  7 08:13:10 2005.
  * $Id$
  *
  * Enfle is free software; you can redistribute it and/or modify it
@@ -20,9 +20,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <stdio.h>
+
+#define REQUIRE_STRING_H
+#include "compat.h"
+
 #include "stream.h"
 #include "7z.h"
 #include "enflestream.h"
+#include "enflestream_private.h"
 
 static int
 enflestream_read(void *obj, unsigned char *buf, unsigned int size)

@@ -1,1 +1,1 @@
-noinst_HEADERS = 7z.h
+noinst_HEADERS = 7z.h memorystream.h filestream.h

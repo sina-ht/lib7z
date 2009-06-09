@@ -1,9 +1,9 @@
 /*
- * filestream.h
- * (C)Copyright 2004 by Hiroshi Takekawa
+ * copy_decode.h
+ * (C)Copyright 2004-2006 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Sep  5 14:44:44 2004.
+ * Last Modified: Fri Apr 14 00:06:30 2006.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -20,11 +20,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if !defined(__FILESTREAM_H__)
-#define __FILESTREAM_H__
+#if !defined(_COPY_DECODE_H_)
+#define _COPY_DECODE_H_
 
-typedef struct _i7z_filestream {
-  FILE *fp;
-} I7z_filestream;
+#include "7z.h"
+
+void *copy_decoder_create(I7z_stream *st, unsigned char *prop, unsigned int propsize);
+void copy_decoder_destroy(void *_dec);
+int copy_decode(void *_dec, unsigned char *output, UINT64 *outsize);
 
 #endif

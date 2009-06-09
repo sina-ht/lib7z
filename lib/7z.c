@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Jul 24 00:32:58 2005.
+ * Last Modified: Wed Jan 10 02:00:09 2007.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -23,15 +23,19 @@
 #define PACKAGE "7z"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
+#define REQUIRE_STRING_H
+#include "compat.h"
 
 #include "7z.h"
 #include "common.h"
 #include "converter.h"
+#include "memorystream.h"
 
 #include "LZMA_SDK/Common/Types.h"
-#include "wrapper/7zip/Compress/PPMD/ppmd_decode.h"
-#include "wrapper/7zip/Compress/LZMA_C/lzma_decode.h"
+#include "copy_decode.h"
+#include "lzma_decode.h"
+#include "ppmd_decode.h"
 
 typedef enum _i7z_id {
   kEnd = 0x00,
@@ -322,7 +326,11 @@ coder_id_to_decoder(I7z_coder *coder, int idsize)
   debug_message("Coder: ");
   switch(coder->ids[0]) {
   case 0:
-    debug_message("Copy"); break;
+    debug_message("Copy");
+    coder->create = copy_decoder_create;
+    coder->decode = copy_decode;
+    coder->destroy = copy_decoder_destroy;
+    break;
   case 1:
     debug_message("Reserved"); break;
   case 2:
@@ -936,7 +944,6 @@ parse_streams_info(I7z *i7z, I7z_pack *pack, I7z_stream *st)
 static int
 parse_files_info_name(I7z *i7z, I7z_stream *st)
 {
-  unsigned char c;
   unsigned int i;
   int res;
 
@@ -962,7 +969,7 @@ parse_files_info_name(I7z *i7z, I7z_stream *st)
     }
     j = 0;
     for (;;) {
-      if (i7z_stream_read(st, (char *)&wc, sizeof(wc)) != sizeof(wc)) {
+      if (i7z_stream_read(st, (unsigned char *)&wc, sizeof(wc)) != sizeof(wc)) {
 	free(wcs);
 	err_message_fnc("Unexpected EOF.\n");
 	res = UNEXPECTED_EOF;
@@ -971,7 +978,7 @@ parse_files_info_name(I7z *i7z, I7z_stream *st)
       wcs[j] = wc;
       if (wc == 0) {
 	i7z->wc_filenames[i] = wcs;
-	if ((res = converter_convert((char *)wcs, &i7z->filenames[i], j * sizeof(*wcs), "UNICODELITTLE", "EUC-JP")) == 0) {
+	if ((res = converter_convert((char *)wcs, &i7z->filenames[i], j * sizeof(*wcs), "UNICODELITTLE", "EUC-JISX0213")) == 0) {
 	  err_message_fnc(" converter_convert returned %d\n", res);
 	}
 	debug_message(" File #%d: %s\n", i, i7z->filenames[i]);
@@ -1096,7 +1103,7 @@ parse_files_info(I7z *i7z, I7z_stream *st)
   I7z_pack *pack = &i7z->main_pack;
   unsigned char c;
   UINT64 external_index, size;
-  unsigned int i, j, k;
+  unsigned int i, j, k, e;
   int l, t, res;
 
   debug_message_fn("()\n");
@@ -1130,8 +1137,10 @@ parse_files_info(I7z *i7z, I7z_stream *st)
     switch (c) {
     case kEmptyStream:
       debug_message_fnc("Got kEmptyStream(0x%02X), Size = %lld\n", c, size);
-      j = k = l = t = 0;
-      pack->folders[0].idx_base = -1;
+      j = k = l = t = e = 0;
+      /* XXX: unneeded? */
+      if (pack->folders)
+	pack->folders[0].idx_base = -1;
       for (i = 0; i < i7z->nfiles; i++) {
 	if (j == 0) {
 	  j = 8;
@@ -1141,6 +1150,7 @@ parse_files_info(I7z *i7z, I7z_stream *st)
 	  i7z->file_to_substream[i] = (UINT64)-1;
 	  k++;
 	  t++;
+	  e++;
 	  debug_message_fnc(" Substream #%d is EMPTY.\n", i);
 	} else {
 	  i7z->file_to_substream[i] = k;
@@ -1162,9 +1172,10 @@ parse_files_info(I7z *i7z, I7z_stream *st)
       }
       break;
     case kEmptyFile:
-      err_message_fnc("Got kEmptyFile(0x%02X), Size = %lld, Not implemented\n", c, size);
-      // for(EmptyStreams)
-      //   BIT IsEmptyFile
+      debug_message_fnc("Got kEmptyFile(0x%02X), Size = %lld, %d empty streams\n", c, size, e);
+      /* Just skip for now */
+      for (i = 0; i < size; i++)
+	c = stream_read_ch(st);
       break;
     case kAnti:
       err_message_fnc("Got kAnti(0x%02X), Size = %lld, Not implemented\n", c, size);
@@ -1297,8 +1308,10 @@ decode_streams(I7z_pack *pack, I7z_stream *st, unsigned int *n_r, unsigned char 
 
     debug_message_fnc("seek to %lld\n", pack->folders[i].stream_base);
     i7z_stream_seek(st, pack->folders[i].stream_base, _I7z_SET);
-    if ((dec = coder->create(st, coder->properties, coder->propertiessize)) == NULL)
+    if ((dec = coder->create(st, coder->properties, coder->propertiessize)) == NULL) {
       err_message_fnc("create() failed\n");
+      return UNKNOWN_CODEC;
+    }
     debug_message_fnc("create() OK\n");
     insize = pack->packsizes[i];
     outsize = pack->folders[i].unpacksizes[0];
@@ -1390,7 +1403,7 @@ parse_header(I7z *i7z, I7z_stream *st)
       res = parse_files_info(i7z, st);
       break;
     default:
-      err_message_fnc("Unexpected property id %02X at %ld\n", c, i7z_stream_tell(st));
+      err_message_fnc("Unexpected property id %02X at %d\n", c, i7z_stream_tell(st));
       return UNEXPECTED_PROPERTYID;
     }
   }
@@ -1455,7 +1468,7 @@ i7z_parse_header(I7z **i7z_p, I7z_stream *st)
 int
 i7z_identify(I7z *i7z, I7z_stream *st)
 {
-  char buf[32];
+  unsigned char buf[32];
   static unsigned char id[] = { '7', 'z', 0xbc, 0xaf, 0x27, 0x1c };
   UINT64 offset;
   UINT64 size;

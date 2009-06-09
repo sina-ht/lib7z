@@ -1,9 +1,9 @@
 /*
  * 7z.c
- * (C)Copyright 2004 by Hiroshi Takekawa
+ * (C)Copyright 2004-2006 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Jul 24 00:25:18 2005.
+ * Last Modified: Sat Sep  9 00:46:14 2006.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -23,10 +23,14 @@
 #define PACKAGE "7z"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
+#define REQUIRE_STRING_H
+#include "compat.h"
 
 #include "7z.h"
 #include "common.h"
+#include "filestream.h"
+#include "memorystream.h"
 
 static void
 extract_files(I7z *i7z, I7z_stream *st)
@@ -59,7 +63,7 @@ extract_files(I7z *i7z, I7z_stream *st)
 
     outsize = folder->unsubstreamsizes[idx_f];
     if ((outbuf = malloc(outsize)) == NULL) {
-      err_message_fnc("Cannot allocate %d bytes\n", outsize);
+      err_message_fnc("Cannot allocate %lld bytes\n", outsize);
       return;
     }
     debug_message_fnc("File #%u: Substream #%d: outsize = %llu (Folder #%u)\n", i, idx, outsize, nfolder);
@@ -68,7 +72,7 @@ extract_files(I7z *i7z, I7z_stream *st)
       char fname[9];
 
       debug_message_fnc("  Decoded: outsize = %lld\n", outsize);
-      snprintf(fname, 9, "F%02llu%05d", nfolder, idx);
+      snprintf(fname, 9, "F%02d%05d", nfolder, idx);
       if (idx_f == 0) {
 	fp = fopen(fname, "wb");
 	fwrite(outbuf, 1, outsize, fp);
@@ -84,22 +88,54 @@ extract_files(I7z *i7z, I7z_stream *st)
     coder->destroy(dec);
 }
 
+static void
+list_files(I7z *i7z)
+{
+  unsigned int i;
+
+  for (i = 0; i < i7z->nfiles; i++) {
+    if (i7z->file_to_substream[i] == (unsigned int)-1)
+      continue;
+    printf("%5d: %s\n", i, i7z->filenames[i]);
+  }
+}
+
+static void
+usage(char *progname)
+{
+  printf("Usage: %s [-e] filename\n", progname);
+}
+
 int
 main(int argc, char **argv)
 {
   I7z_stream *st;
   I7z *i7z;
   int res;
+  char *archive_file;
+  int is_extract = 0;
 
-  if (argc == 1) {
-    printf("Usage: %s filename\n", argv[0]);
+  if (argc == 1 || argc > 3) {
+    usage(argv[0]);
     return 0;
+  }
+
+  archive_file = argv[1];
+  if (argc == 3) {
+    if (strcmp(argv[1], "-e")) {
+      usage(argv[0]);
+      return 0;
+    }
+    is_extract = 1;
+    archive_file = argv[2];
   }
 
   if ((st = i7z_stream_create()) == NULL)
     exit(1);
-  if (!i7z_stream_make_filestream(st, argv[1]))
+  if (!i7z_stream_make_filestream(st, archive_file)) {
+    fprintf(stderr, "Cannot open %s\n", archive_file);
     exit(1);
+  }
 
   if ((i7z = i7z_create()) == NULL)
     goto out;
@@ -110,7 +146,10 @@ main(int argc, char **argv)
   if ((res = i7z_parse_header(&i7z, st)) < 0)
     goto out_free_i7z;
 
-  extract_files(i7z, st);
+  if (is_extract)
+    extract_files(i7z, st);
+  else
+    list_files(i7z);
 
  out_free_i7z:
   i7z_free(i7z);

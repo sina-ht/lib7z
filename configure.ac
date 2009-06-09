@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
-AC_INIT([7z],[20050725],[sian@big.or.jp])
+AC_PREREQ(2.60)
+AC_INIT([7z],[20060909],[sian@big.or.jp])
 AC_CONFIG_SRCDIR([src/7z.c])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -82,6 +82,9 @@ else
   fi
 fi
 AM_CONDITIONAL(BUILD_ENFLE, test "$build_enfle" = "yes")
+
+dnl If you get ipo related error with buggy icc, try CFLAGS=-no-ipo PLUGIN_LDFLAGS="-XCClinker -no-ipo"
+AC_SUBST(PLUGIN_LDFLAGS)
 
 AC_CONFIG_FILES([Makefile
                  include/Makefile

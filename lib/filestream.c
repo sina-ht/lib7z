@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Jul 24 00:20:13 2005.
+ * Last Modified: Fri Oct  7 08:09:43 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -21,8 +21,11 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "7z.h"
 #include "filestream.h"
+#include "filestream_private.h"
 
 static int
 filestream_read(void *obj, unsigned char *buf, unsigned int size)

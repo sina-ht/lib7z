@@ -3,8 +3,11 @@ INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/lib/LZMA_SDK -I$(top_srcdir)/
 
 noinst_HEADERS = \
 	converter.h \
-	filestream.h \
-	memorystream.h \
+	filestream_private.h \
+	memorystream_private.h \
+	copy_decode.h \
+	lzma_decode.h \
+	ppmd_decode.h \
 	LZMA_SDK/Common/Alloc.h \
 	LZMA_SDK/Common/CRC.h \
 	LZMA_SDK/Common/Defs.h \
@@ -22,14 +25,12 @@ noinst_HEADERS = \
 	LZMA_SDK/7zip/Compress/RangeCoder/RangeCoder.h \
 	LZMA_SDK/7zip/Compress/RangeCoder/RangeCoderBit.h \
 	LZMA_SDK/7zip/Compress/RangeCoder/StdAfx.h \
-	wrapper/7zip/Compress/PPMD/ppmd_decode.h \
 	wrapper/7zip/Compress/PPMD/PPMDDecode.h \
 	wrapper/7zip/Compress/PPMD/PPMDDecoder.h \
 	wrapper/7zip/Compress/PPMD/PPMDContext.h \
 	wrapper/7zip/Compress/PPMD/PPMDSubAlloc.h \
 	wrapper/7zip/Compress/PPMD/PPMDType.h \
 	wrapper/7zip/Compress/PPMD/StdAfx.h \
-	wrapper/7zip/Compress/LZMA_C/lzma_decode.h \
 	wrapper/7zip/Compress/LZMA_C/LzmaDecode.h
 
 #	wrapper/7zip/Compress/PPMD/PPMDEncoder.cpp
@@ -42,10 +43,11 @@ lib7z_la_SOURCES = \
 	converter.c \
 	filestream.c \
 	memorystream.c \
-	wrapper/7zip/Compress/LZMA_C/lzma_decode.c \
+	copy_decode.c \
+	lzma_decode.c \
+	ppmd_decode.cpp \
 	wrapper/7zip/Compress/LZMA_C/LzmaDecode.c \
 	wrapper/7zip/Compress/PPMD/StdAfx.cpp \
-	wrapper/7zip/Compress/PPMD/ppmd_decode.cpp \
 	wrapper/7zip/Compress/PPMD/PPMDDecoder.cpp \
 	LZMA_SDK/Common/Alloc.cpp \
 	LZMA_SDK/Common/CRC.cpp \

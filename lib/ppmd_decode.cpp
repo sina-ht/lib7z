@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Jul 24 01:27:35 2005.
+ * Last Modified: Thu Apr 13 23:58:34 2006.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -33,7 +33,7 @@
 #endif
 
 #include "../../../Common/MyCom.h"
-#include "PPMDDecoder.h"
+#include "wrapper/7zip/Compress/PPMD/PPMDDecoder.h"
 #include "ppmd_decode.h"
 
 struct PPMD_Decoder {

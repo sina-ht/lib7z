@@ -3,7 +3,7 @@
  * (C)Copyright 2004 by Hiroshi Takekawa
  * This file is part of lib7z.
  *
- * Last Modified: Sun Jul 24 00:20:38 2005.
+ * Last Modified: Fri Oct  7 08:05:03 2005.
  * $Id$
  *
  * lib7z is free software; you can redistribute it and/or modify it
@@ -21,9 +21,14 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+
+#define REQUIRE_STRING_H
+#include "compat.h"
 
 #include "7z.h"
 #include "memorystream.h"
+#include "memorystream_private.h"
 
 static int
 memorystream_read(void *obj, unsigned char *buf, unsigned int size)

@@ -3,7 +3,7 @@
  * (C)Copyright 2000-2004 by Hiroshi Takekawa
  * This file is part of Enfle.
  *
- * Last Modified: Thu Sep 23 04:24:59 2004.
+ * Last Modified: Sat Feb 25 01:09:03 2006.
  * $Id$
  *
  * Enfle is free software; you can redistribute it and/or modify it
@@ -31,6 +31,7 @@
 #include "enfle/archiver-plugin.h"
 
 #include "7z.h"
+#include "enflestream.h"
 
 typedef struct _7z_data {
   I7z *i7z;
@@ -86,7 +87,7 @@ I7z_open(Archive *arc, Stream *st, char *path)
   I7z_stream *i7z_st;
   I7z_pack *pack;
   I7z_folder *folder;
-  unsigned char *outbuf;
+  unsigned char *outbuf = NULL;
   int i, res, skip, nfolder;
   UINT64 outsize;
 
@@ -151,7 +152,6 @@ I7z_destroy(Archive *arc)
 {
   I7z_data *i7z_d = arc->data;
   I7z *i7z = i7z_d->i7z;
-  I7z_coder *coder = &i7z->main_pack.folders[0].coders[0];
 
   if (i7z_d->dec)
     i7z_d->coder->destroy(i7z_d->dec);
@@ -172,7 +172,7 @@ DEFINE_ARCHIVER_PLUGIN_IDENTIFY(a, st, priv)
 {
   I7z *i7z = NULL;
   I7z_stream *i7z_st = NULL;
-  int res;
+  ArchiverStatus res;
 
   if ((i7z = i7z_create()) == NULL)
     return OPEN_ERROR;
@@ -206,7 +206,8 @@ DEFINE_ARCHIVER_PLUGIN_OPEN(a, st, priv)
   I7z_info *i7z_i;
   Hash *hash;
   unsigned int i;
-  int res;
+  int r;
+  ArchiverStatus res;
 
 #ifdef IDENTIFY_BEFORE_OPEN
   if (identify(a, st, priv) == OPEN_NOT)
@@ -227,7 +228,7 @@ DEFINE_ARCHIVER_PLUGIN_OPEN(a, st, priv)
   }
 
   i7z_stream_tell(i7z_st);
-  if ((res = i7z_parse_header(&i7z, i7z_st)) < 0) {
+  if ((r = i7z_parse_header(&i7z, i7z_st)) < 0) {
     res = OPEN_ERROR;
     goto out_free_i7z;
   }
@@ -260,8 +261,10 @@ DEFINE_ARCHIVER_PLUGIN_OPEN(a, st, priv)
     path[0] = '#';
     strcat(path, i7z->filenames[i]);
     dlist_add(dl, path);
-    if ((i7z_i = calloc(1, sizeof(*i7z_i))) == NULL)
-      return OPEN_ERROR;
+    if ((i7z_i = calloc(1, sizeof(*i7z_i))) == NULL) {
+      res = OPEN_ERROR;
+      goto out_free_i7z;
+    }
     i7z_i->i7z_d = i7z_d;
     i7z_i->idx = i7z->file_to_substream[i];
     if (hash_define_str_value(hash, path, i7z_i) < 0) {

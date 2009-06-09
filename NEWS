@@ -1,2 +1,3 @@
+20060909: Added 'copy' decoder.  Skip kEmptyFile.
 20050725: Plugged some memory leaks.  Updated to LZMA SDK 4.23.
 20050305: Fixed a double free bug.
