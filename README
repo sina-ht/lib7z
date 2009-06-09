@@ -1,0 +1,57 @@
+lib7z -- 7z archive manipulation library
+(C)Copyright 2004 by Hiroshi Takekawa.
+
+Limitation:
+
+  lib7z can decode almost all .7z files, but some not.  lib7z cannot
+  create .7z files so far.
+
+Build:
+  To build lib7z, just do './configure && make'.
+  To build enfle 7z archiver plugin, do
+  $ ./configure --with-enfle-src=/path/to/enfle/src && make
+  Then, do
+  # cp enfle/.libs/archiver_7z.so /usr/lib/enfle/plugins/archiver/
+                                 (/usr/local/lib)
+  to install.  Remember run 'enfle -N' to rebuild plugin cache if you
+  use it.
+
+Licensing Term:
+
+  This file is part of lib7z.
+
+  lib7z is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License version 2 as
+  published by the Free Software Foundation.
+
+  lib7z is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+  License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+
+  ATTENTION: GPL version 2 only. You cannot apply any later version.
+  This situation may change in the future.  Although COPYING.LIB is
+  included in this archive, it is for LZMA SDK and 7-zip, so lib7z
+  itself is NOT under LGPL.
+
+Integrated codes by other authors:
+
+  lib/LZMA_SDK: LZMA SDK 4.05
+    LZMA SDK by Igor Pavlov.  LZMA SDK is under lib/LZMA_SDK/.  For
+    this part, you can apply LGPL or CPL.  See
+    lib/LZMA_SDK/docs/lzma.txt.
+
+  lib/wrapper/7zip/Compress/LZMA_C/LzmaDecode.[ch]: LZMA decoder
+    LZMA decoder written in C from LZMA SDK 4.05 with some
+    modification by me.  These files are under LGPL, including my
+    modification.
+
+  lib/wrapper/7zip/Compress/PPMD/*: PPMD decoder
+                          (except ppmd_decode.cpp and ppmd_decode.h)
+    PPMD decoder from 7-zip with some modification by me.  These files
+    are under LGPL, including my modification.  ppmd_decode.cpp and
+    ppmd_decode.h are under GPL.

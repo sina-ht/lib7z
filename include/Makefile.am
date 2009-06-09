@@ -1,0 +1,1 @@
+noinst_HEADERS = 7z.h
